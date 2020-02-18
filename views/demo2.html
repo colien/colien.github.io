@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>hangge.com</title>
+	<style>
+		.test-img{width:100px;height:100px;background:url("https://csdnimg.cn/pubfooter/images/csdn-cxrs.png")}
+	</style>
+  </head>
+  <body style="margin:0px">
+    <div id="capture" style="width:800px;padding: 10px; background: #f5da55; ">		
+		<div class="test-img"></div>
+		<img src="https://csdnimg.cn/pubfooter/images/csdn-cxrs.png"/>
+		<img src="https://b-gold-cdn.xitu.io/v3/static/img/extension.138f3a7.png"/>
+		
+    </div>
+    <button type="button" name="button" onclick="convert()">开始生成</button>
+    <br>
+	
+	<script src="static/js/html2canvas.js"></script>
+	<script src="static/js/canvas2image.js"></script>
+	<script src="static/js/bluebird.min.js"></script>
+	
+    <script type="text/javascript">
+	function getImgToBase64(imgEle,callback){//将图片转换为Base64
+	  var canvas = document.createElement('canvas'),
+		ctx = canvas.getContext('2d'),
+		img = new Image;
+	  img.crossOrigin = 'Anonymous';
+	  img.onload = function(err){
+		  try{
+			canvas.height = img.height;
+			canvas.width = img.width;
+			ctx.drawImage(img,0,0);
+			var dataURL = canvas.toDataURL('image/png');
+			imgEle.src = dataURL;
+			canvas = null;
+			callback && callback(dataURL);
+		  }catch(e){
+			console.warn(e);
+		  }
+	  };
+	  img.src = imgEle.src+"?v=" + Math.random();   
+	}
+	function imgToData(callBack){
+		var imgList = document.getElementsByTagName("img");
+		var length = imgList.length;
+		var i = 0;
+		var count = 0;
+		for(var i = 0; i< length ; i++){
+			getImgToBase64(imgList[i],function(dataURL){
+				count++;
+				if(count >= length){
+					callBack && callBack();
+				}
+			})
+		}
+	}
+	
+      //开始转换
+      function convert() {
+		imgToData(startCanvas);
+       
+      }
+	function startCanvas(){
+		 html2canvas(document.body,{
+			allowTaint: true,
+			useCORS: true,
+		}).then(function(canvas){
+			var imgUrl = canvas.toDataURL("image/png", 1); // 此方法可以设置截图质量（0-1）
+			console.log("base64编码数据：", imgUrl);
+			//Canvas2Image.saveAsPNG(canvas,true)
+	
+			document.body.appendChild(canvas)
+        });
+	}
+
+    </script>
+  </body>
+</html>

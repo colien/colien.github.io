@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <title>html2Canvas demo</title>
+    <script>
+        document.documentElement.style.fontSize = window.screen.width / 7.5 + 'px';
+    </script>
+    <style>
+        body,
+        html,
+        div,
+        p,
+        ul,
+        li,
+        a,
+        img,
+        span,
+        button,
+        header,
+        footer,
+        section {
+            padding: 0;
+            margin: 0;
+        }
+
+        *, :before, :after {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            outline: none;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+
+        ::-webkit-scrollbar {
+            width: 0;
+            opacity: 0;
+        }
+
+        button{
+            font-family: simsun,"microsoft yahei", arial, "Helvetica Neue", Helvetica, STHeiTi, sans-serif;
+        }
+        body {
+            font-family: "microsoft yahei", arial, "Helvetica Neue", Helvetica, STHeiTi, sans-serif;
+            color: #000;
+            background-color: #f5f5f5;
+            -webkit-overflow-scrolling: touch;
+        }
+        .share-container {
+            padding-top: 0.72rem;
+            width: 2.35rem;
+            margin: 0 auto;
+        }
+
+        .share-content {
+            padding-top: 0.72rem;
+            height:3rem;
+            background-color: blue;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .text{
+            font-size: 0.36rem;
+            color: #000;
+        }
+        .btn-share {
+            width: 64%;
+            height: 0.89rem;
+            background-color: #3baaff;
+            border-radius: 0.89rem;
+            border: 1px solid #3baaff;
+            color: white;
+            font-size: 0.36rem;
+            margin: 0.75rem 0 0.67rem;
+        }
+        .btn-share:active{
+            background-color: #1b96c8;
+        }
+    </style>
+</head>
+<body>
+<section class="main-container">
+    <div id="capture" style="width:500px;height:300px;padding: 10px; background: #f5da55">
+		<h4 style="color: #000; ">Hello world!</h4>
+	</div>
+
+    <footer class="footer-center">
+        <button class="btn-share" id="btnShare">截&nbsp;图</button>
+    </footer>
+</section>
+
+<script src="static/js/html2canvas.js"></script>
+<script>
+
+    var main = {
+        init:function(){
+            main.setListener();
+        },
+        //设置监听事件
+        setListener:function(){
+            var btnShare = document.getElementById("btnShare");
+            btnShare.onclick = function(){
+                main.html2Canvas();
+            }
+        },
+        //绘制dom 元素，生成截图canvas
+        html2Canvas: function () {
+            html2canvas(document.querySelector("#capture")).then(function (canvas) {
+               console.log("html2canvas");
+                document.body.appendChild(canvas)
+            });
+        }
+    };
+
+    //最后运行代码
+    main.init();
+
+</script>
+</body>
+</html>

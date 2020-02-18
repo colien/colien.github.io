@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>hangge.com</title>
+	<style>
+		.test-img{width:100px;height:100px;background:url("/images/banner-1.jpg")}
+	</style>
+  </head>
+  <body style="margin:0px">
+    <div id="capture" style="width:800px;padding: 10px; background: #f5da55; ">		
+		<div class="test-img"></div> 
+		<!-- <img src="https://csdnimg.cn/pubfooter/images/csdn-cxrs.png"/>-->
+		<img src="/images/banner-1.jpg"/>
+		<img src="https://b-gold-cdn.xitu.io/v3/static/img/extension.138f3a7.png"/>
+		
+    </div>
+    <button type="button" name="button" onclick="convert()">开始生成</button>
+    <br>
+
+	<script src="/js/html2canvas.js"></script>
+	<script src="/js/jsPdf.debug.js"></script>
+	<script src="/js/bluebird.min.js"></script>
+    <script type="text/javascript">
+	
+	function convert(){
+		imgToData(startCanvas)
+	}
+
+	function getDataUrlBySrc(imgEle,callback) {
+		var xmlHTTP = new XMLHttpRequest();
+		xmlHTTP.open("GET", imgEle.src, true);
+		// 以 ArrayBuffer 的形式返回数据
+		xmlHTTP.responseType = "arraybuffer";
+		xmlHTTP.onload = function(e) {
+			// 1. 将返回的数据存储在一个 8 位无符号整数值的类型化数组里面
+			var arr = new Uint8Array(xmlHTTP.response);
+
+			// 2. 转为 charCode 字符串
+			var raw = Array.prototype.map.call(arr, function(charCode) { return String.fromCharCode(charCode)}).join("");
+
+			// 3. 将二进制字符串转为 base64 编码的字符串
+			var b64 = btoa(raw);
+			var dataURL = "data:image/jpeg;base64," + b64;
+
+			imgEle.src = dataURL;
+			imgEle.dataType = true;
+			callback && callback(dataURL);
+		};
+
+		xmlHTTP.onerror = function(err) {
+			reject(err);
+		};
+		xmlHTTP.send();
+	}
+	
+	function getImgToBase64(imgEle,callback){//将图片转换为Base64
+	  var canvas = document.createElement('canvas');
+	  var ctx = canvas.getContext('2d');
+	  var img = new Image;
+	  img.crossOrigin = 'Anonymous';
+	  img.onload = function(err){
+		  try{
+			canvas.height = img.height;
+			canvas.width = img.width;
+			ctx.drawImage(img,0,0);
+			var dataURL = canvas.toDataURL('image/png');
+			imgEle.src = dataURL;
+			imgEle.dataType = true;
+			canvas = null;
+			callback && callback(dataURL);
+		  }catch(e){
+			console.warn(e);
+		  }
+	  };
+	  img.src = imgEle.src;
+	}
+	function imgToData(callBack){
+		var imgList = document.getElementsByTagName("img");
+		var length = imgList.length;
+		var i = 0;
+		var count = 0;
+		for(var i = 0; i< length ; i++){
+			if(imgList[i].dataType){
+				count++;
+				continue;
+			}
+			if("IE"){
+				var imgList = document.getElementsByTagName("img");
+				getDataUrlBySrc(imgList[i],function(b64){ 
+					count++;
+					if(count >= length){
+						callBack && callBack();
+					}
+				});
+			}else{
+				getImgToBase64(imgList[i],function(dataURL){
+					count++;
+					if(count >= length){
+						callBack && callBack();
+					}
+				})
+			}
+		}
+		if(count >= length){
+			callBack && callBack();
+		}
+	}
+	
+	function startCanvas(){
+		 html2canvas(document.body,{
+			allowTaint: true,
+			useCORS: true,
+		}).then(function(canvas){
+			var imgUrl = canvas.toDataURL("image/png", 1); // 此方法可以设置截图质量（0-1）
+			console.log("base64编码数据：", imgUrl);
+	
+			document.body.appendChild(canvas);
+			renderPDF(canvas);
+        });
+	}
+	
+	function renderPDF(canvas){
+
+		var contentWidth = canvas.width;
+		var contentHeight = canvas.height;
+
+		//一页pdf显示html页面生成的canvas高度;
+		var pageHeight = contentWidth / 592.28 * 841.89;
+		//未生成pdf的html页面高度
+		var leftHeight = contentHeight;
+		//页面偏移
+		var position = 0;
+		//a4纸的尺寸[595.28,841.89]，html页面生成的canvas在pdf中图片的宽高
+		var imgWidth = 595.28;
+		var imgHeight = 592.28/contentWidth * contentHeight;
+
+		var pageData = canvas.toDataURL('images/jpeg', 1.0);
+
+		var pdf = new jsPDF('', 'pt', 'a4');
+
+		//有两个高度需要区分，一个是html页面的实际高度，和生成pdf的页面高度(841.89)
+		//当内容未超过pdf一页显示的范围，无需分页
+		if (leftHeight < pageHeight) {
+			pdf.addImage(pageData, 'JPEG', 0, 0, imgWidth, imgHeight );
+		}else{
+			while(leftHeight > 0) {
+				pdf.addImage(pageData, 'JPEG', 0, position, imgWidth, imgHeight)
+				leftHeight -= pageHeight;
+				position -= 841.89;
+				//避免添加空白页
+				if(leftHeight > 0) {
+					pdf.addPage();
+				}
+			}
+		}
+		pdf.save("demo-"+ new Date().getTime() + ".pdf");
+	}
+
+    </script>
+  </body>
+</html>
